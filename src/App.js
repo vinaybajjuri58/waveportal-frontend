@@ -16,7 +16,7 @@ export default function App() {
         </div>
 
         <div className="bio">
-          I am farza and I worked on self-driving cars so that's pretty cool
+          I am Vinay and I worked on developing web apps so that's pretty cool
           right? Connect your Ethereum wallet and wave at me!
         </div>
 
