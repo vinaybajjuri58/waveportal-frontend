@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import abi from "./utils/WavePortal.json";
+import { LoaderComponent } from "./Components";
 import "./App.css";
 const contractAddress = "0x4340c85781057D2213dB52c939699f462E283dEB";
 
 export default function App() {
   const [currentAccount, setCurrentAccount] = useState("");
+  const [loading, setLoading] = useState(false);
   const contractABI = abi.abi;
   const checkIfWalletIsConnected = async () => {
     try {
@@ -32,6 +34,7 @@ export default function App() {
   };
 
   const connectButtonHandler = async () => {
+    setLoading(true);
     try {
       const { ethereum } = window;
       if (!ethereum) {
@@ -45,10 +48,13 @@ export default function App() {
       setCurrentAccount(accounts[0]);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const wave = async () => {
+    setLoading(true);
     try {
       const { ethereum } = window;
       if (ethereum) {
@@ -75,6 +81,8 @@ export default function App() {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,7 +99,7 @@ export default function App() {
           </span>{" "}
           Hey there!
         </div>
-
+        {loading && <LoaderComponent />}
         <div className="bio">
           I am Vinay and I worked on developing web apps so that's pretty cool
           right? Connect your Ethereum wallet and wave at me!
