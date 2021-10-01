@@ -1,14 +1,89 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ethers } from "ethers";
 import abi from "./utils/WavePortal.json";
 import { LoaderComponent } from "./Components";
 import "./App.css";
-const contractAddress = "0x4340c85781057D2213dB52c939699f462E283dEB";
+const contractAddress = "0x9127F8c7315BdF3256d0273730D9e9FFBCe7E392";
 
 export default function App() {
   const [currentAccount, setCurrentAccount] = useState("");
+  const [allWaves, setAllWaves] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [inputMessage, setInputMessage] = useState("");
   const contractABI = abi.abi;
+
+  const wave = async () => {
+    setLoading(true);
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+        let count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved Total wave count", count.toNumber());
+
+        const waveTxn = await wavePortalContract.wave(inputMessage);
+        console.log("Mining...", waveTxn.hash);
+
+        await waveTxn.wait();
+        console.log("Mined -- ", waveTxn.hash);
+        setAllWaves([
+          ...allWaves,
+          {
+            address: waveTxn.from,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: inputMessage,
+          },
+        ]);
+        setInputMessage("");
+        count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved total wave count...", count.toNumber());
+      } else {
+        console.log("Ethereum object doesnt exist");
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAllWaves = useCallback(async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const waveportalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        const waves = await waveportalContract.getAllWaves();
+        let wavesCleaned = [];
+        waves.forEach((wave) => {
+          console.log(wave.timestamp);
+          wavesCleaned.push({
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: wave.message,
+          });
+        });
+        setAllWaves(wavesCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [contractABI]);
+
   const checkIfWalletIsConnected = async () => {
     try {
       const { ethereum } = window;
@@ -53,42 +128,25 @@ export default function App() {
     }
   };
 
-  const wave = async () => {
-    setLoading(true);
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-        let count = await wavePortalContract.getTotalWaves();
-        console.log("Retrieved Total wave count", count.toNumber());
-
-        const waveTxn = await wavePortalContract.wave();
-        console.log("Mining...", waveTxn.hash);
-
-        await waveTxn.wait();
-        console.log("Mined -- ", waveTxn.hash);
-
-        count = await wavePortalContract.getTotalWaves();
-        console.log("Retrieved total wave count...", count.toNumber());
-      } else {
-        console.log("Ethereum object doesnt exist");
-      }
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
+  const handleInputChange = (e) => {
+    setInputMessage(e.target.value);
   };
 
   useEffect(() => {
     checkIfWalletIsConnected();
   }, []);
+
+  useEffect(() => {
+    getAllWaves();
+  }, [getAllWaves]);
+
+  const waveButtonHandler = () => {
+    if (inputMessage.length > 0) {
+      wave();
+    } else {
+      console.log("Input Cannot be Empty");
+    }
+  };
 
   return (
     <div className="mainContainer">
@@ -102,10 +160,13 @@ export default function App() {
         {loading && <LoaderComponent />}
         <div className="bio">
           I am Vinay and I worked on developing web apps so that's pretty cool
-          right? Connect your Ethereum wallet and wave at me!
+          right? Connect your Ethereum wallet and send me a good lofi beats
+          playlist!
         </div>
 
-        <button className="waveButton" onClick={wave}>
+        <input type="text" value={inputMessage} onChange={handleInputChange} />
+
+        <button className="waveButton" onClick={waveButtonHandler}>
           Wave at Me
         </button>
         {!currentAccount && (
@@ -113,6 +174,22 @@ export default function App() {
             Connect wallet
           </button>
         )}
+        {allWaves.map((wave, index) => {
+          return (
+            <div
+              key={index}
+              style={{
+                backgroundColor: "OldLace",
+                marginTop: "16px",
+                padding: "8px",
+              }}
+            >
+              <div>Address: {wave.address}</div>
+              <div>Time: {wave.timestamp.toString()}</div>
+              <div>Message: {wave.message}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
