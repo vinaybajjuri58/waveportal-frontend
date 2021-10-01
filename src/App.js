@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import abi from "./utils/WavePortal.json";
 import { LoaderComponent } from "./Components";
 import "./App.css";
-const contractAddress = "0x9127F8c7315BdF3256d0273730D9e9FFBCe7E392";
+const contractAddress = "0xAfcbaf2B68F07f9828079801E86C01bd2b89E496";
 
 export default function App() {
   const [currentAccount, setCurrentAccount] = useState("");
