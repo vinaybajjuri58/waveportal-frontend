@@ -34,15 +34,7 @@ export default function App() {
 
         await waveTxn.wait();
         console.log("Mined -- ", waveTxn.hash);
-        setAllWaves([
-          ...allWaves,
-          {
-            address: waveTxn.from,
-            timestamp: new Date(wave.timestamp * 1000),
-            message: inputMessage,
-          },
-        ]);
-        setInputMessage("");
+
         count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
       } else {
@@ -70,10 +62,10 @@ export default function App() {
         const waves = await waveportalContract.getAllWaves();
         let wavesCleaned = [];
         waves.forEach((wave) => {
-          console.log(wave.timestamp);
+          console.log({ wave });
           wavesCleaned.push({
             address: wave.waver,
-            timestamp: new Date(wave.timestamp * 1000),
+            timestamp: new Date(wave.timestammp * 1000),
             message: wave.message,
           });
         });
