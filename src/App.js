@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import Linkify from "react-linkify";
 import { ethers } from "ethers";
 import abi from "./utils/WavePortal.json";
 import { LoaderComponent } from "./Components";
@@ -62,7 +63,6 @@ export default function App() {
         const waves = await waveportalContract.getAllWaves();
         let wavesCleaned = [];
         waves.forEach((wave) => {
-          console.log({ wave });
           wavesCleaned.push({
             address: wave.waver,
             timestamp: new Date(wave.timestammp * 1000),
@@ -190,9 +190,16 @@ export default function App() {
                 padding: "8px",
               }}
             >
-              <div>Address: {wave.address}</div>
-              <div>Time: {wave.timestamp.toString()}</div>
-              <div>Message: {wave.message}</div>
+              <p>Address: {wave.address}</p>
+              <p>Time: {wave.timestamp.toString()}</p>
+              <Linkify
+                properties={{
+                  target: "_blank",
+                  style: { color: "red", fontWeight: "bold" },
+                }}
+              >
+                Message: {wave.message}{" "}
+              </Linkify>
             </div>
           );
         })}
